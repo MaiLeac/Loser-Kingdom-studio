@@ -13,3 +13,6 @@ Health, accidents, emergencies, caregiving and recovery take priority, even if t
 Recovery stops focus checks, leaves unfinished tasks pending and persists across reloads. It grants no XP, HP, completed task or streak reset. Repeated requests suggest reducing workload, never a health-proof demand or a quota that forces someone to work. The journal does not retain health explanations. This is a local self-discipline app: localStorage and self-reports are editable, so it cannot guarantee honesty or support competitive rankings without separate server-side accounts and evidence policies.
 
 Generated and stored challenges must exactly match the reviewed catalog. Old unreviewed challenges are retired without completion rewards. Free-text submissions need review before use. Shock effects are replaced by a static dismissible reminder; recovery pauses the challenge screens. Vietnamese TTS selects a `vi` voice explicitly and displays a message if the device lacks one.
+
+## Tài liệu dự án cho người và AI
+Đọc [AGENTS.md](AGENTS.md), [hồ sơ dự án](docs/PROJECT.md), [bàn giao repo](docs/HANDOFF.md) và [quyết định](docs/DECISIONS.md) trước khi sửa. Xem thêm [sản phẩm và test](docs/PRODUCT-AND-TEST.md) / [app tham khảo](docs/REFERENCE-APPS.md).
