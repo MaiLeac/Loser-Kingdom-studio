@@ -1,0 +1,6 @@
+{
+  "name": "Vương Quốc Loser - Hardcore Self-Discipline Engine",
+  "description": "Hệ điều hành kỷ luật thép, chống trì hoãn và cai nghiện dopamine với AI sỉ nhục, hình phạt ngẫu nhiên và phòng biệt giam chống gian lận.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
