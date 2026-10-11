@@ -2,6 +2,7 @@
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private speechVersion = 0;
 
   private initCtx() {
     if (!this.ctx) {
@@ -18,6 +19,7 @@ class SoundEngine {
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
+    if (muted) this.stopAll();
   }
 
   public getMuted(): boolean {
@@ -181,6 +183,7 @@ class SoundEngine {
   }
 
   public stopAll() {
+    this.speechVersion++;
     if (this.ctx && this.ctx.state !== 'closed') {
       try {
         this.ctx.suspend();
@@ -193,18 +196,30 @@ class SoundEngine {
     }
   }
 
-  // Text to Speech in savage Vietnamese if supported
-  public speakRoast(text: string) {
+  // Never substitute an English voice when Vietnamese is unavailable.
+  public async speakRoast(text: string) {
     if (this.isMuted) return;
-    if (!('speechSynthesis' in window)) return;
-
-    window.speechSynthesis.cancel();
+    const status = (message: string) => window.dispatchEvent(new CustomEvent('voice-status', {detail: message}));
+    if (!('speechSynthesis' in window)) { status('Thiết bị chưa hỗ trợ đọc giọng Việt.'); return; }
+    const synth = window.speechSynthesis;
+    const version = ++this.speechVersion;
+    synth.cancel();
+    if (!synth.getVoices().length) await new Promise<void>(resolve => {
+      const finish = () => {clearTimeout(timer); synth.removeEventListener('voiceschanged', finish); resolve();};
+      const timer = setTimeout(finish, 1800);
+      synth.addEventListener('voiceschanged', finish);
+    });
+    if (version !== this.speechVersion || this.isMuted) return;
+    const voice = synth.getVoices().find(v => /^vi(?:-|_|$)/i.test(v.lang));
+    if (!voice) { status('Thiết bị chưa có giọng tiếng Việt. Nội dung vẫn hiển thị; không dùng giọng Anh thay thế.'); return; }
+    status('');
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 1.05;
-    utterance.pitch = 0.9;
-    window.speechSynthesis.speak(utterance);
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.onerror = () => status('Chưa đọc được giọng Việt. Bạn có thể thử nghe lại.');
+    synth.speak(utterance);
   }
 }
-
 export const sound = new SoundEngine();

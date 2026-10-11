@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   UserStats, 
   TaskItem, 
@@ -25,7 +25,9 @@ import {
   INITIAL_TASKS,
   INITIAL_PUNISHMENTS
 } from './utils/storage';
+import { isReviewedPunishment } from './utils/safePunishments';
 import { sound } from './utils/audio';
+import { applyReviewPenalty, ExcuseReview, isExcuseReview, ReasonType, reviewExcuse } from './utils/excusePolicy';
 
 import { HeaderHUD } from './components/HeaderHUD';
 import { QuarantineTimer } from './components/QuarantineTimer';
@@ -35,11 +37,7 @@ import { CrowdsourcedTortureChamber } from './components/CrowdsourcedTortureCham
 import { InfractionCrimeLog } from './components/InfractionCrimeLog';
 import { PanicModal } from './components/PanicModal';
 
-// Disruption Overlays
-import { BlueScreenOfDeath } from './components/Disruptions/BlueScreenOfDeath';
-import { SirenAlarmOverlay } from './components/Disruptions/SirenAlarmOverlay';
-import { UglyMirrorModal } from './components/Disruptions/UglyMirrorModal';
-import { GlitchInvertedOverlay } from './components/Disruptions/GlitchInvertedOverlay';
+
 
 import { 
   Lock, 
@@ -61,6 +59,12 @@ export default function App() {
   const [activeDisruption, setActiveDisruption] = useState<DisruptionType>('none');
   const [disruptionReason, setDisruptionReason] = useState<string>('');
   const [showPanicModal, setShowPanicModal] = useState<boolean>(false);
+  const [recoveryMode, setRecoveryMode] = useState(() => localStorage.getItem('vql_recovery_mode') === '1');
+  const recoveryRef = useRef(recoveryMode);
+  recoveryRef.current = recoveryMode;
+  const [reviewNotice, setReviewNotice] = useState<ExcuseReview | null>(null);
+  useEffect(() => { localStorage.setItem('vql_recovery_mode', recoveryMode ? '1' : '0'); }, [recoveryMode]);
+
 
   // Auto-save stats, recalculate rank
   useEffect(() => {
@@ -104,25 +108,11 @@ export default function App() {
 
   // Trigger random psychological shock
   const handleTriggerRandomDisruption = (reason: string) => {
+    if (recoveryMode) return;
     const disruptions: DisruptionType[] = ['blue_screen', 'siren_alarm', 'ugly_mirror', 'glitch_inverted'];
     const pick = disruptions[Math.floor(Math.random() * disruptions.length)];
     setDisruptionReason(reason);
     setActiveDisruption(pick);
-  };
-
-  // Assign a punishment to user
-  const handleAssignPunishment = (title: string, desc: string) => {
-    const newPun: PunishmentItem = {
-      id: `pun-${Date.now()}`,
-      title,
-      description: desc,
-      category: 'physical',
-      severity: 'severe',
-      completed: false,
-      assignedAt: Date.now(),
-      source: 'ai_generated',
-    };
-    setPunishments((prev) => [newPun, ...prev]);
   };
 
   // Complete a punishment
@@ -132,53 +122,60 @@ export default function App() {
     );
   };
 
-  // Handle confession submission from Panic button
-  const handlePanicConfession = async (appAbused: string, excuse: string) => {
-    setShowPanicModal(false);
-    setActiveTab('roast');
-    sound.playGlitch();
+  const handleReviewResult = (review: ExcuseReview, reason: string, appAbused: string) => {
+    if (recoveryRef.current && review.decision !== 'rest') return;
+    setReviewNotice(review);
+    sound.stopAll();
+    if (review.decision === 'rest') {
+      recoveryRef.current = true;
+      setRecoveryMode(true);
+      setTasks(prev => prev.map(task => task.status === 'in_quarantine' ? {...task, status: 'pending'} : task));
+      setActiveDisruption('none');
+    }
+    // Asking for rest gives no XP, HP recovery, task completion or streak reset.
+    setStats(prev => applyReviewPenalty(prev, review));
+    setLogs(prev => [{
+      id: `review-${crypto.randomUUID()}`, timestamp: Date.now(), appAbused,
+      reason: review.decision === 'rest' ? 'Xin nghỉ theo nhóm lý do đã chọn (không lưu chi tiết sức khỏe)' : reason,
+      roastReceived: review.roast, hpLost: review.hpPenalty,
+      outcome: review.decision, reasonCategory: review.category,
+    }, ...prev]);
+  };
 
+  const handlePanicConfession = async (appAbused: string, excuse: string, reasonType: ReasonType) => {
+    const protectedReview = reviewExcuse(excuse, reasonType);
+    if (protectedReview.decision !== 'accountability') {
+      handleReviewResult(protectedReview, excuse, appAbused);
+      setShowPanicModal(false);
+      return;
+    }
     try {
       const res = await fetch('/api/roast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetApp: appAbused,
-          taskName: 'Nhiệm vụ bị bỏ lơ',
-          excuse,
-          failureStreak: stats.failedTasks + 1,
-          loserRank: stats.rank,
-        }),
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ targetApp: appAbused, excuse, reasonType }),
       });
-      const data = await res.json();
-
-      setStats((prev) => ({
-        ...prev,
-        hp: Math.max(0, prev.hp - 15),
-        shamePoints: prev.shamePoints + 10,
-        dopamineAddiction: Math.min(100, prev.dopamineAddiction + 15),
-      }));
-
-      const newLog: InfractionLog = {
-        id: `panic-${Date.now()}`,
-        timestamp: Date.now(),
-        appAbused,
-        reason: excuse,
-        roastReceived: data.roast,
-        hpLost: 15,
-        punishmentAssigned: 'Chống đẩy sám hối',
-      };
-      setLogs((prev) => [newLog, ...prev]);
-
-      // Trigger siren shock overlay!
-      setDisruptionReason(`Tự thú phạm tội lướt ${appAbused}`);
-      setActiveDisruption('siren_alarm');
+      const data: unknown = await res.json();
+      if (!res.ok || !isExcuseReview(data)) throw new Error('Invalid review response');
+      // Local protection also prevents an outdated server response penalizing illness.
+      const local = reviewExcuse(excuse, reasonType);
+      handleReviewResult(local.decision !== 'accountability' ? local : data, excuse, appAbused);
+      setShowPanicModal(false);
     } catch {
-      setActiveDisruption('siren_alarm');
+      setReviewNotice({decision: 'clarify', category: 'auto', hpPenalty: 0, isFallback: true,
+        roast: 'Chưa kết nối được hệ thống. Không phạt vì lỗi mạng; bạn vẫn có thể bấm nghỉ ngay.'});
+      // A protected request must work even without the server.
+      const local = reviewExcuse(excuse, reasonType);
+      if (local.decision === 'rest') handleReviewResult(local, excuse, appAbused);
+      setShowPanicModal(false);
     }
   };
 
+  const handleRequestRest = () => handleReviewResult(reviewExcuse('Cần nghỉ và hồi phục', 'recovery'), '', 'Phiên tập trung');
+  const restCount = logs.filter(log => log.outcome === 'rest' && log.timestamp >= Date.now() - 7 * 86400000).length;
+
   const handleResetAllData = () => {
+    setRecoveryMode(false);
+    setReviewNotice(null);
     setStats(INITIAL_STATS);
     setTasks(INITIAL_TASKS);
     setPunishments(INITIAL_PUNISHMENTS);
@@ -194,6 +191,18 @@ export default function App() {
         onPanicClick={() => setShowPanicModal(true)}
       />
 
+      {(reviewNotice || recoveryMode) && <section className="mx-auto w-full max-w-7xl px-4 py-4" aria-live="polite">
+        <div className="bg-zinc-900 border border-emerald-700 rounded-2xl p-4 space-y-3">
+          <h2 className="font-bold">{recoveryMode ? 'Đang nghỉ / hồi phục · không phạt' : reviewNotice?.decision === 'clarify' ? 'Cần làm rõ · chưa phạt' : 'Nhắc kỷ luật · −10 HP'}</h2>
+          {reviewNotice && <p className="text-sm text-zinc-200">{reviewNotice.roast}</p>}
+          {recoveryMode && <p className="text-xs text-zinc-400">Nhiệm vụ chưa hoàn thành; không cộng XP hay hồi HP. {restCount >= 3 ? `Bạn đã xin nghỉ ${restCount} lần trong 7 ngày. Khi sẵn sàng, cân nhắc giảm khối lượng hoặc thời lượng; đây không phải kết luận bạn nói dối.` : 'Không cần chứng minh tình trạng sức khỏe.'}</p>}
+          <div className="flex gap-3 flex-wrap">
+            {recoveryMode && <button className="bg-emerald-600 rounded-lg px-4 py-2 text-sm font-bold" onClick={() => {setRecoveryMode(false); setReviewNotice(null); setActiveTab('quarantine');}}>Tôi sẵn sàng quay lại</button>}
+            {reviewNotice && <button className="bg-zinc-800 rounded-lg px-4 py-2 text-sm" onClick={() => setReviewNotice(null)}>Đóng thông báo</button>}
+          </div>
+        </div>
+      </section>}
+
       {/* Global Floating Emergency Rescue Button when any disruption is active */}
       {activeDisruption !== 'none' && (
         <div className="fixed top-4 right-4 z-50">
@@ -206,32 +215,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Disruption Overlays */}
-      {activeDisruption === 'blue_screen' && (
-        <BlueScreenOfDeath
-          reason={disruptionReason}
-          onDismiss={dismissDisruption}
-        />
-      )}
-      {activeDisruption === 'siren_alarm' && (
-        <SirenAlarmOverlay
-          reason={disruptionReason}
-          onDismiss={dismissDisruption}
-        />
-      )}
-      {activeDisruption === 'ugly_mirror' && (
-        <UglyMirrorModal
-          onDismiss={dismissDisruption}
-          onPenancePaid={() => {
-            setStats((prev) => ({ ...prev, shamePoints: prev.shamePoints + 2 }));
-          }}
-        />
-      )}
-      {activeDisruption === 'glitch_inverted' && (
-        <GlitchInvertedOverlay
-          onDismiss={dismissDisruption}
-        />
-      )}
+      {activeDisruption !== 'none' && <div role="dialog" aria-label="Nhắc tập trung" className="fixed inset-0 z-40 bg-black/80 flex items-center justify-center p-4">
+        <div className="p-6 rounded-2xl bg-zinc-900 max-w-md space-y-4">
+          <h2 className="font-bold">Tạm dừng và chọn bước tiếp theo</h2>
+          <p>{disruptionReason}</p>
+          <button onClick={dismissDisruption} className="bg-zinc-700 rounded-lg p-3">Đóng nhắc nhở</button>
+          <button onClick={handleRequestRest} className="bg-emerald-700 rounded-lg p-3 ml-2">Xin nghỉ · không phạt</button>
+        </div>
+      </div>}
 
       {/* Quick Panic Modal */}
       {showPanicModal && (
@@ -262,7 +253,7 @@ export default function App() {
 
           <button
             onClick={() => {
-              sound.playGlitch();
+              sound.stopAll();
               setActiveTab('roast');
             }}
             className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
@@ -287,7 +278,7 @@ export default function App() {
             }`}
           >
             <Box className="w-4 h-4 text-purple-300" />
-            Hộp Quỷ Dữ (Shocks)
+            Hộp thử thách
           </button>
 
           <button
@@ -317,7 +308,7 @@ export default function App() {
             }`}
           >
             <FileText className="w-4 h-4 text-zinc-400" />
-            Bảng Tiền Án ({logs.length})
+            Nhật ký ({logs.length})
           </button>
         </nav>
 
@@ -326,9 +317,11 @@ export default function App() {
           <QuarantineTimer
             tasks={tasks}
             stats={stats}
-            onUpdateStats={setStats}
+            onUpdateStats={updater => setStats(prev => recoveryRef.current ? prev : updater(prev))}
             onUpdateTasks={setTasks}
             onTriggerDisruption={handleTriggerRandomDisruption}
+            recoveryMode={recoveryMode}
+            onRequestRest={handleRequestRest}
           />
         )}
 
@@ -336,34 +329,35 @@ export default function App() {
         {activeTab === 'roast' && (
           <SavageRoastChamber
             stats={stats}
-            onUpdateStats={setStats}
-            onAddLog={(log) => setLogs((prev) => [log, ...prev])}
-            onTriggerDisruption={handleTriggerRandomDisruption}
-            onAssignPunishment={handleAssignPunishment}
+            onReviewResult={handleReviewResult}
+            recoveryMode={recoveryMode}
+            onRequestRest={handleRequestRest}
           />
         )}
 
+        {recoveryMode && (activeTab === 'mystery_box' || activeTab === 'torture') && <p className="p-6 bg-zinc-900 rounded-xl">Các thử thách tạm dừng trong lúc nghỉ. Khi đủ sức, bấm “Tôi sẵn sàng quay lại”.</p>}
+
         {/* Tab 3: Mystery Box of Terror & Shocks */}
-        {activeTab === 'mystery_box' && (
+        {activeTab === 'mystery_box' && !recoveryMode && (
           <MysteryBoxOfTerror
             stats={stats}
             onSelectDisruption={(type) => {
               setDisruptionReason('Kích hoạt thử thách sốc trực tiếp từ Hộp Quỷ Dữ');
               setActiveDisruption(type);
             }}
-            onAddPunishment={(pun) => setPunishments((prev) => [pun, ...prev])}
-            onUpdateStats={setStats}
+            onAddPunishment={(pun) => { if (!recoveryRef.current && isReviewedPunishment(pun)) setPunishments((prev) => [pun, ...prev]); }}
+            onUpdateStats={updater => setStats(prev => recoveryRef.current ? prev : updater(prev))}
           />
         )}
 
         {/* Tab 4: Crowdsourced Torture Chamber */}
-        {activeTab === 'torture' && (
+        {activeTab === 'torture' && !recoveryMode && (
           <CrowdsourcedTortureChamber
             punishments={punishments}
             stats={stats}
             onCompletePunishment={handleCompletePunishment}
-            onAddPunishment={(pun) => setPunishments((prev) => [pun, ...prev])}
-            onUpdateStats={setStats}
+            onAddPunishment={(pun) => { if (!recoveryRef.current && isReviewedPunishment(pun)) setPunishments((prev) => [pun, ...prev]); }}
+            onUpdateStats={updater => setStats(prev => recoveryRef.current ? prev : updater(prev))}
           />
         )}
 

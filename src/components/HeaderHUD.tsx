@@ -41,7 +41,7 @@ export const HeaderHUD: React.FC<Props> = ({ stats, onPanicClick }) => {
       : 'text-emerald-400 border-emerald-500/50 bg-emerald-950/40';
 
   return (
-    <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 text-white px-4 py-3 select-none">
+    <header className="md:sticky md:top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 text-white px-4 py-3 select-none">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand & Rank */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -51,10 +51,10 @@ export const HeaderHUD: React.FC<Props> = ({ stats, onPanicClick }) => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-black text-base tracking-wider uppercase bg-gradient-to-r from-red-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                <h1 className="font-black text-sm sm:text-base tracking-wider uppercase bg-gradient-to-r from-red-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
                   Vương Quốc Loser
                 </h1>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 font-bold uppercase">
+                <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 font-bold uppercase">
                   v2.0 Hardcore
                 </span>
               </div>

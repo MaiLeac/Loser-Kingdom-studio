@@ -19,6 +19,8 @@ import {
 
 interface Props {
   tasks: TaskItem[];
+  recoveryMode: boolean;
+  onRequestRest: () => void;
   stats: UserStats;
   onUpdateStats: (updater: (prev: UserStats) => UserStats) => void;
   onUpdateTasks: (tasks: TaskItem[]) => void;
@@ -27,6 +29,8 @@ interface Props {
 
 export const QuarantineTimer: React.FC<Props> = ({
   tasks,
+  recoveryMode,
+  onRequestRest,
   stats,
   onUpdateStats,
   onUpdateTasks,
@@ -36,6 +40,10 @@ export const QuarantineTimer: React.FC<Props> = ({
   const [targetDuration, setTargetDuration] = useState<number>(25); // minutes
   const [timeLeft, setTimeLeft] = useState<number>(25 * 60);
   const [isActive, setIsActive] = useState<boolean>(false);
+  useEffect(() => {
+    if (recoveryMode) { setIsActive(false); setVerifyingTask(null); sound.stopAll(); }
+  }, [recoveryMode]);
+
   const [breachCount, setBreachCount] = useState<number>(0);
   const [lastBreachWarning, setLastBreachWarning] = useState<string | null>(null);
   const [strictTabWatch, setStrictTabWatch] = useState<boolean>(true);
@@ -54,14 +62,14 @@ export const QuarantineTimer: React.FC<Props> = ({
   useEffect(() => {
     const handleVisibilityChange = () => {
       const now = Date.now();
-      if (isActive && strictTabWatch && document.hidden) {
+      if (isActive && !recoveryMode && strictTabWatch && document.hidden) {
         // Enforce 25 seconds cooldown between alerts so user isn't spammed endlessly
         if (now - lastBreachTimeRef.current < 25000) {
           return;
         }
         lastBreachTimeRef.current = now;
 
-        sound.playSiren(3000);
+        sound.stopAll();
         setBreachCount((prev) => prev + 1);
         const warning = `CẢNH BÁO: Bị phát hiện rời tab lúc ${new Date().toLocaleTimeString()}! Trừ 15 HP!`;
         setLastBreachWarning(warning);
@@ -83,12 +91,12 @@ export const QuarantineTimer: React.FC<Props> = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isActive, strictTabWatch, onUpdateStats, onTriggerDisruption]);
+  }, [isActive, recoveryMode, strictTabWatch, onUpdateStats, onTriggerDisruption]);
 
   // Timer countdown interval
   useEffect(() => {
     let interval: any = null;
-    if (isActive && timeLeft > 0) {
+    if (isActive && !recoveryMode && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -111,9 +119,10 @@ export const QuarantineTimer: React.FC<Props> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeLeft, tasks, selectedTaskId]);
+  }, [isActive, recoveryMode, timeLeft, tasks, selectedTaskId]);
 
   const startQuarantine = () => {
+    if (recoveryMode) return;
     if (!selectedTaskId) {
       sound.playBuzzer();
       return;
@@ -143,6 +152,7 @@ export const QuarantineTimer: React.FC<Props> = ({
   };
 
   const handleManualComplete = () => {
+    if (recoveryMode) return;
     const curr = tasks.find((t) => t.id === selectedTaskId);
     if (curr) {
       setVerifyingTask(curr);
@@ -188,10 +198,11 @@ export const QuarantineTimer: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Verification Modal if opened */}
-      {verifyingTask && (
+      {verifyingTask && !recoveryMode && (
         <AntiCheatModal
           task={verifyingTask}
           onSuccess={(proof, aiScore, aiFeedback) => {
+            if (recoveryMode) return;
             onUpdateTasks(
               tasks.map((t) =>
                 t.id === verifyingTask.id
@@ -218,6 +229,7 @@ export const QuarantineTimer: React.FC<Props> = ({
             setIsActive(false);
           }}
           onFail={(reason) => {
+            if (recoveryMode) return;
             setVerifyingTask(null);
             onUpdateStats((prev) => ({
               ...prev,
@@ -283,7 +295,7 @@ export const QuarantineTimer: React.FC<Props> = ({
               {currentTask ? currentTask.title : 'Chọn hoặc tạo nhiệm vụ trước khi giam giữ!'}
             </h2>
             <p className="text-xs md:text-sm text-zinc-400 mt-1">
-              Quy tắc thép: Nếu bạn đổi tab, thu nhỏ cửa sổ hoặc nghịch điện thoại, hệ thống sẽ hú còi và phạt HP ngay lập tức!
+              Nếu bật phạt đổi tab, rời trang trong phiên tập trung sẽ trừ HP. Bạn có thể tắt chế độ này hoặc xin nghỉ trước khi rời trang.
             </p>
           </div>
 
@@ -333,12 +345,16 @@ export const QuarantineTimer: React.FC<Props> = ({
             </div>
           )}
 
+          <button onClick={() => {setIsActive(false); setVerifyingTask(null); sound.stopAll(); onRequestRest();}} className="px-5 py-3 rounded-xl border border-emerald-700 text-emerald-300 text-sm font-bold">
+            Xin nghỉ / hồi phục · không phạt
+          </button>
+          {recoveryMode && <p className="text-sm text-emerald-300">Đang nghỉ. Bấm “Tôi sẵn sàng quay lại” phía trên để mở phiên mới.</p>}
           {/* Timer Primary Action Controls */}
           <div className="flex items-center gap-3 pt-2">
             {!isActive ? (
               <button
                 onClick={startQuarantine}
-                disabled={!selectedTaskId}
+                disabled={!selectedTaskId || recoveryMode}
                 className="px-8 py-4 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.4)] flex items-center gap-2.5 transition-transform active:scale-95 cursor-pointer disabled:opacity-40"
               >
                 <Play className="w-5 h-5 fill-current" />
@@ -347,6 +363,7 @@ export const QuarantineTimer: React.FC<Props> = ({
             ) : (
               <div className="flex flex-wrap gap-3">
                 <button
+                  disabled={recoveryMode}
                   onClick={handleManualComplete}
                   className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase text-xs tracking-wider rounded-xl shadow-lg flex items-center gap-2 transition-transform active:scale-95"
                 >
@@ -476,7 +493,7 @@ export const QuarantineTimer: React.FC<Props> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setVerifyingTask(task);
+                        if (!recoveryMode) setVerifyingTask(task);
                       }}
                       className="px-3 py-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 rounded-lg text-xs font-bold"
                     >

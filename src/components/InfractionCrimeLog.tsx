@@ -22,7 +22,7 @@ export const InfractionCrimeLog: React.FC<Props> = ({
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
           <span className="text-[11px] text-zinc-400 uppercase font-bold block">Tổng Lần Phạm Tội</span>
           <span className="text-2xl md:text-3xl font-black text-red-500 font-mono mt-1 block">
-            {stats.failedTasks + stats.quarantineBreaches + logs.length}
+            {stats.failedTasks + stats.quarantineBreaches + logs.filter(log => !log.outcome || log.outcome === 'accountability').length}
           </span>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-center">
@@ -50,7 +50,7 @@ export const InfractionCrimeLog: React.FC<Props> = ({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-red-500" />
-            <h3 className="font-extrabold text-white text-base">Hồ Sơ Tiền Án & Nhật Ký Phạm Tội</h3>
+            <h3 className="font-extrabold text-white text-base">Nhật ký kỷ luật & nghỉ hợp lý</h3>
           </div>
           <div className="flex gap-2">
             {logs.length > 0 && (
@@ -102,7 +102,7 @@ export const InfractionCrimeLog: React.FC<Props> = ({
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                  <span>Trừ: <strong className="text-red-400">-{log.hpLost} HP</strong></span>
+                  <span>{log.outcome === 'rest' ? 'Nghỉ hợp lý · không phạt' : log.outcome === 'clarify' ? 'Chưa rõ · không phạt' : <>Trừ: <strong className="text-red-400">-{log.hpLost} HP</strong></>}</span>
                   {log.punishmentAssigned && (
                     <span className="text-amber-400 font-semibold">Hình phạt: {log.punishmentAssigned}</span>
                   )}

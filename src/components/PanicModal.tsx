@@ -1,32 +1,37 @@
 import React, { useState } from 'react';
-import { sound } from '../utils/audio';
+import { ReasonPicker } from './ReasonPicker';
+import { ReasonType } from '../utils/excusePolicy';
 import { AlertOctagon, Flame, X, Siren, Camera } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
-  onSubmitConfession: (app: string, excuse: string) => void;
+  onSubmitConfession: (app: string, excuse: string, reasonType: ReasonType) => Promise<void>;
 }
 
 export const PanicModal: React.FC<Props> = ({ onClose, onSubmitConfession }) => {
   const [selectedApp, setSelectedApp] = useState('TikTok');
   const [excuse, setExcuse] = useState('');
+  const [reasonType, setReasonType] = useState<ReasonType>('auto');
+  const [loading, setLoading] = useState(false);
 
   const APPS = ['TikTok', 'Facebook Reels', 'Shopee Săn Sale', 'YouTube Shorts', 'Instagram', 'Game Gacha'];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmitConfession(selectedApp, excuse || 'Vừa lướt vô bổ không kiểm soát');
+    if (loading) return;
+    setLoading(true);
+    try { await onSubmitConfession(selectedApp, excuse, reasonType); } finally { setLoading(false); }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-md">
-      <div className="max-w-md w-full bg-zinc-950 border-2 border-red-600 rounded-3xl p-6 text-white space-y-5 shadow-[0_0_60px_rgba(239,68,68,0.5)] animate-in fade-in zoom-in-95 duration-200">
+    <div role="dialog" aria-label="Nói rõ lý do / xin nghỉ" className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-md">
+      <div className="max-h-[90dvh] overflow-y-auto max-w-md w-full bg-zinc-950 border-2 border-red-600 rounded-3xl p-6 text-white space-y-5 shadow-[0_0_60px_rgba(239,68,68,0.5)] animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
           <div className="flex items-center gap-2 text-red-500 font-black text-sm uppercase">
             <AlertOctagon className="w-5 h-5 animate-bounce" />
-            Tự Thú Tội Lỗi Cấp Tốc
+            Nói rõ lý do / xin nghỉ
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white p-1">
+          <button aria-label="Đóng" onClick={onClose} className="text-zinc-500 hover:text-white p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -34,7 +39,7 @@ export const PanicModal: React.FC<Props> = ({ onClose, onSubmitConfession }) => 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-bold text-zinc-300 block mb-1.5">
-              Mày vừa lỡ tay mở app nào?
+              Bối cảnh hiện tại
             </label>
             <div className="grid grid-cols-2 gap-2">
               {APPS.map((app) => (
@@ -56,7 +61,7 @@ export const PanicModal: React.FC<Props> = ({ onClose, onSubmitConfession }) => 
 
           <div>
             <label className="text-xs font-bold text-zinc-300 block mb-1.5">
-              Lời thú tội / Ngụy biện:
+              Lý do cần nghỉ hoặc điều khiến bạn trì hoãn:
             </label>
             <input
               type="text"
@@ -67,13 +72,15 @@ export const PanicModal: React.FC<Props> = ({ onClose, onSubmitConfession }) => 
             />
           </div>
 
+          <ReasonPicker value={reasonType} onChange={setReasonType} />
           <div className="pt-2">
             <button
               type="submit"
+              disabled={loading}
               className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black uppercase text-xs rounded-xl shadow-[0_0_20px_rgba(239,68,68,0.4)] flex items-center justify-center gap-2 transition-transform active:scale-95"
             >
               <Flame className="w-4 h-4" />
-              Nộp Mình Cho Đại Ma Vương Vả
+              {loading ? 'Đang xem xét…' : 'Gửi lý do'}
             </button>
           </div>
         </form>
