@@ -2,6 +2,7 @@
 Cập nhật 12/10/2026. Tài liệu tổng hợp yêu cầu và quyết định từ cuộc trao đổi với chủ dự án; không phải toàn bộ transcript. Không suy ra rằng mọi ý tưởng dưới đây đều được phép triển khai ngay.
 
 ## Đọc trước khi sửa
+Sổ ý tưởng cập nhật: [IDEAS.md](IDEAS.md), bao gồm năm hình mẫu được yêu cầu ngày 15/10/2026.
 1. AGENTS.md ở gốc repo.
 2. docs/PROJECT.md (tài liệu này): mục tiêu và trạng thái yêu cầu.
 3. docs/HANDOFF.md: trạng thái riêng của repo, cách chạy và kiểm tra.

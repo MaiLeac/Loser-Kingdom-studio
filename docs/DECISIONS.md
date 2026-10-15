@@ -17,3 +17,7 @@ Cập nhật 12/10/2026.
 | Chưa hợp nhất hai repo | Chưa chốt nền và chiến lược; không giả định feature có ở cả hai |
 
 Thêm quyết định mới cùng ngày, bằng chứng/giả thuyết và điều kiện xem xét lại. Không xóa lịch sử lý do chỉ vì hướng đổi.
+
+## 15/10/2026 — Năm hình mẫu
+User yêu cầu Naval, James Clear, Tim Ferriss, Bruce Lee, David Goggins xuất hiện trong app. Bản nhỏ Python là prompt cố định tùy chọn, không giả danh/trích dẫn và không thay luật HP. Xem IDEAS.md. Studio mới đồng bộ đặc tả.
+

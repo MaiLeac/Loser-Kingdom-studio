@@ -40,3 +40,7 @@ Chưa onboarding mới, hệ nhân vật, provider voice, PWA/hosting hoàn ch�
 
 ## Trước khi tiếp tục
 Đọc PROJECT; kiểm tra scope và trạng thái PR. Không port feature giữa repo hay merge khi chưa chốt kế hoạch. Test protected/unclear/accountability, callback muộn trong lúc nghỉ, mute khi chờ voice và reload trước release.
+
+## 15/10/2026 — Bàn giao mới
+Xem IDEAS.md để đọc yêu cầu năm hình mẫu và trạng thái từng repo. static/mentors.js ở Python có 5 góc nhìn, VI/EN, 4 tình huống; node --check và kiểm tra dữ liệu bằng assert đạt. Chưa kiểm thử giao diện điện thoại hoặc đồng bộ runtime 8888 trong lượt này. Các ghi chú HowToLiveBetter và lịch 30 phút cũng nằm trong docs.
+
