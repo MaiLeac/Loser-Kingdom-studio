@@ -27,3 +27,16 @@ Mỗi ý tưởng ghi vấn đề, giả thuyết, bản nhỏ, trạng thái t�
 
 ## Cập nhật hình mẫu và cây kỹ năng
 Xem [MENTORS-AND-SKILLS.md](MENTORS-AND-SKILLS.md): yêu cầu mới thay hướng nhân vật chính cũ; Python đã có auto reminder khi start/done, Studio mới đặc tả. Cây kỹ năng và phần thưởng cá nhân hóa chưa triển khai, cần gắn bằng chứng năng lực ngoài đời.
+
+## Chiến dịch cá nhân — đề xuất ngày 15/10/2026
+User đưa mô hình Campaign → Operations → Missions → Daily orders → After-action review. Đây là định hướng cần đánh giá, chưa phải lệnh xây toàn bộ hệ thống.
+- Vấn đề giả định: không thấy liên hệ giữa việc hôm nay và điều muốn đạt; chưa biết chọn bước tiếp theo. Cần kiểm chứng, không mặc định chỉ thiếu động lực.
+- Cách kể chuyện: người dùng là chỉ huy, hình mẫu là cố vấn. Không giả tổ chức thật tuyển dụng/giám sát, không đánh đồng ẩn dụ CIA với sự kiện thật.
+- Bản nhỏ đề xuất: một hướng ưu tiên → một kết quả tuần → một hành động hôm nay; cuối phiên ghi kết quả và bước tiếp theo. Campaign/Operation có thể để metadata tùy chọn, chưa cần 5 tầng màn hình.
+- Ví dụ: tiếng Anh để kể chuyện → một bản nháp 150 từ và bản sửa trong tuần → hôm nay viết 5 câu trong 15 phút. Đây là ví dụ, chưa phải lịch user đã chốt.
+- Việc gấp: đánh giá hậu quả nếu trì hoãn, chọn chuyển/dời/giữ việc; lưu bước tiếp theo trước khi chuyển. Không phạt chỉ vì thay kế hoạch hợp lý.
+- Tổng kết tùy chọn ngắn: làm được gì, vướng đâu, bước tiếp theo; không bắt nhật ký dài.
+- Quyền tự chủ: sửa/dừng/bỏ chiến dịch, nghỉ, tắt nhắc/voice; không mất tiến trình do nghỉ, không có nghĩa vụ làm theo nhân vật.
+- Liên kết cây kỹ năng: ghi thực hành và bằng chứng năng lực riêng; không tự cho “tăng kỷ luật” chỉ từ streak.
+- Cách thử rẻ: dùng tiêu đề/mô tả task hiện có và một ghi chú tuần trước khi thêm schema/UI. So thời gian chọn/bắt đầu việc, đầu ra và gánh quản lý. Chưa có dữ liệu hiệu quả.
+- Chưa triển khai campaign, Operation, mission scheduler, app blocker hệ điều hành hoặc tổng kết tự động ở hai repo; tính năng cố vấn hiện tại không đồng nghĩa đã có hệ chiến dịch.
