@@ -2,11 +2,11 @@
 Cập nhật 15/10/2026. Đọc cùng PROJECT.md và HANDOFF.md. Đây là điểm tra cứu ý tưởng; trạng thái dưới đây không thay thế kiểm tra mã đang chạy.
 
 ## Đã yêu cầu làm
-- Năm hình mẫu: Naval Ravikant (đòn bẩy), James Clear (hệ thống), Tim Ferriss (lược bỏ/tối ưu), Bruce Lee (linh hoạt), David Goggins (bền bỉ).
+- Danh sách ban đầu, hiện đã mở rộng thành 10 (xem MENTORS-AND-SKILLS.md): Naval Ravikant (đòn bẩy), James Clear (hệ thống), Tim Ferriss (lược bỏ/tối ưu), Bruce Lee (linh hoạt), David Goggins (bền bỉ).
 - Bản nhỏ được triển khai lần này ở nhánh Python: mục mở rộng Góc nhìn cố vấn, chọn hình mẫu + tình huống, câu hỏi và bước tiếp theo VI/EN viết sẵn. Không gọi AI, không thêm phí/credential, không avatar/voice clone, không tự sửa task/điểm.
 - Câu chữ là nội dung mới lấy cảm hứng theo cách diễn giải sản phẩm, không phải trích dẫn, tuyên bố người thật trả lời hay chứng thực app.
-- Cả năm dùng cùng ưu tiên nghỉ/sức khỏe; Goggins không ép chịu đau hoặc làm quá sức.
-- Chưa triển khai panel ở Studio; chưa xác nhận cập nhật bản runtime 8888. Không ghi “đã live” chỉ vì có mã trong clone.
+- Cả 10 dùng cùng ưu tiên nghỉ/sức khỏe; Goggins không ép chịu đau hoặc làm quá sức.
+- Studio chưa có panel. Ngày 15/10/2026 đã backup và cập nhật ba tệp static của Python runtime, mở localhost:8888 xác nhận danh sách 10 hình mẫu.
 
 ## Chờ kiểm chứng / thiết kế
 - Hỗ trợ định hướng sống → ưu tiên giai đoạn → việc hôm nay → điều chỉnh. User chọn 30 phút/ngày. Xem LIFE-GOALS-AND-FIRST-WEEK.md.
@@ -19,8 +19,11 @@ Cập nhật 15/10/2026. Đọc cùng PROJECT.md và HANDOFF.md. Đây là đi�
 
 ## Không coi đoạn chat dán vào là sự thật đã duyệt
 Không đưa các con số lịch sử, giờ làm việc, chẩn đoán “dopamine”, lời trích dẫn hoặc giả định mục tiêu cá nhân trong đoạn dán thành kiến thức mặc định của app.
-Năm idol được hiểu là năm tên trong bảng của user; Bác Hồ nằm trong ví dụ trước bảng, chưa thêm như hình mẫu thứ sáu.
+Cập nhật: user đã yêu cầu thêm Marcus Aurelius, Charlie Munger, Hồ Chí Minh, Marie Curie, Steve Jobs; Naval/Munger trùng tên được gộp. Tổng 10 hình mẫu.
 Không bảo đảm bắt chước sẽ thất bại hay hệ thống sẽ phát huy “toàn bộ năng lực”. Đo xem góc nhìn có giúp chọn và bắt đầu một hành động hay chỉ tăng thời gian ở app.
 
 ## Cập nhật
 Mỗi ý tưởng ghi vấn đề, giả thuyết, bản nhỏ, trạng thái từng repo và cách đo. Không tự động xây backlog. Đây là tài liệu chung có bản sao, chưa tự đồng bộ.
+
+## Cập nhật hình mẫu và cây kỹ năng
+Xem [MENTORS-AND-SKILLS.md](MENTORS-AND-SKILLS.md): yêu cầu mới thay hướng nhân vật chính cũ; Python đã có auto reminder khi start/done, Studio mới đặc tả. Cây kỹ năng và phần thưởng cá nhân hóa chưa triển khai, cần gắn bằng chứng năng lực ngoài đời.

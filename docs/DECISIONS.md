@@ -21,3 +21,6 @@ Thêm quyết định mới cùng ngày, bằng chứng/giả thuyết và đi�
 ## 15/10/2026 — Năm hình mẫu
 User yêu cầu Naval, James Clear, Tim Ferriss, Bruce Lee, David Goggins xuất hiện trong app. Bản nhỏ Python là prompt cố định tùy chọn, không giả danh/trích dẫn và không thay luật HP. Xem IDEAS.md. Studio mới đồng bộ đặc tả.
 
+
+## 15/10/2026 — Đội ngũ hình mẫu làm nhân vật chính
+User ưu tiên đội ngũ hình mẫu thay dàn nhân vật loli/hàng xóm. Thêm 5 tên, tổng 10 không trùng. Bản nhỏ auto theo start/done, không timer spam/giả danh. Cây kỹ năng gắn năng lực thực là hướng thử, chưa xây hệ thống XP mới.

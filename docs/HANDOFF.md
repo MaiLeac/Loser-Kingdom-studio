@@ -44,3 +44,8 @@ Chưa onboarding mới, hệ nhân vật, provider voice, PWA/hosting hoàn ch�
 ## 15/10/2026 — Bàn giao mới
 Xem IDEAS.md để đọc yêu cầu năm hình mẫu và trạng thái từng repo. static/mentors.js ở Python có 5 góc nhìn, VI/EN, 4 tình huống; node --check và kiểm tra dữ liệu bằng assert đạt. Chưa kiểm thử giao diện điện thoại hoặc đồng bộ runtime 8888 trong lượt này. Các ghi chú HowToLiveBetter và lịch 30 phút cũng nằm trong docs.
 
+
+## 15/10/2026 — Mở rộng 10 hình mẫu
+Python: static/mentors.js và sự kiện mentor:task trong static/app.js; nhắc inline start/done, opt-out lưu trình duyệt, cà khịa opt-in. node --test test_mentors.cjs test_audio.cjs: 8/8 đạt. Preview mobile 390px kiểm tra danh sách và lời nghỉ không tràn ngang. Studio chưa port UI. Mục nghỉ chỉ là lời nhắc, không chữa gap recovery Python. Xem MENTORS-AND-SKILLS.md. Cây kỹ năng mới là đề xuất.
+
+Runtime 15/10: backup tại work/mentor-backup-20261015-172915; chỉ copy static/app.js, static/index.html, static/mentors.js sau kiểm tra baseline. Server 8888 đã bật lại và xác nhận UI thật có 10 tên ở viewport 390px; không tạo/start/hoàn thành task thật để test. Không thay database trong script cập nhật. Auto event được kiểm tra bằng mock DOM, chưa chạy end-to-end trên API thật. Screenshot outputs/mentor-mobile.png ở workspace gốc. Tài liệu nằm ở nhánh đang làm, chưa merge.
