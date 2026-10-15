@@ -59,6 +59,8 @@ export interface InfractionLog {
   roastReceived: string;
   hpLost: number;
   punishmentAssigned?: string;
+  outcome?: 'accountability' | 'rest' | 'clarify';
+  reasonCategory?: string;
 }
 
 export type DisruptionType =
